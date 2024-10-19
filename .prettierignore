@@ -1,0 +1,10 @@
+node_modules/
+**/*.json
+**/*.log
+**/*.md
+
+eslint.config.mjs
+.env
+.gitignore
+.prettierrc
+.prettierignore
