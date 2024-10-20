@@ -9,6 +9,7 @@ export type User = {
 };
 
 export type Post = {
+  id: string,
   authorId: string,
   title: string,
   description: string,
@@ -216,17 +217,12 @@ type RequestHandler<T> = (req: RequestBody<T>, res:Response, nex:NextFunction) =
     helpers.prepareStandardHeaders(res);
 
     const incomingPost:Post = {
+      id: new randomUUID(),
       title: req.body.title,
       description: req.body.description,
       createdDate: new Date().toString(),
       authorId: req.body.authorid,
     };
-
-    /* @TODO post data validation
-    if (!helpers.validateUser(incomingUser)) {
-      res.status(400).send("Incorrect input data");
-      return;
-    } */
 
     const postsFile = [
       ...JSON.parse(await file.read("posts", "json")),
@@ -248,6 +244,7 @@ type RequestHandler<T> = (req: RequestBody<T>, res:Response, nex:NextFunction) =
     const tmp1 = postsFile.filter((el:Post) => el.authorId == userFile.id);
     const tmp2 = tmp1.map((el:Post) => {
       return {
+        id: el.id,
         title: el.title,
         description: el.description,
         createdDate: el.createdDate,
@@ -299,6 +296,7 @@ type RequestHandler<T> = (req: RequestBody<T>, res:Response, nex:NextFunction) =
     helpers.prepareStandardHeaders(res);
 
     const incomingPost: Omit<Post, "authorId"> = {
+      id: req.body.id,
       title: req.body.title,
       description: req.body.description,
       createdDate: req.body.createddate,
@@ -307,14 +305,12 @@ type RequestHandler<T> = (req: RequestBody<T>, res:Response, nex:NextFunction) =
     backup.write("posts", "json");
 
     const postsFile = JSON.parse(await file.read("posts", "json"));
-    const userFile = JSON.parse(
+    /* const userFile = JSON.parse(
       await file.read(res.locals.decoded.payload, "json")
-    );
+    );*/
 
-    const pos = postsFile.findIndex(
-      (el:Post) =>
-        el.createdDate == incomingPost.createdDate && el.authorId == userFile.id
-    );
+    const pos = postsFile.findIndex((el:Post) => el.id == incomingPost.id);
+
     postsFile[pos].title = incomingPost.title;
     postsFile[pos].description = incomingPost.description;
     postsFile[pos].createdDate = new Date().toString();
